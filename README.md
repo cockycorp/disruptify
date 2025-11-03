@@ -26,9 +26,9 @@ Disruptify embraces a *next-gen, cloud-first, containerized ecosystem of disrupt
 ```mermaid
 graph TD
     subgraph Kubernetes Cluster
-        A[Main Application Pod<br/>"The Brain of Disruption"]
-        B[Database Pod<br/>"Because Data is the New Oil"]
-        C[Monitoring Pod<br/>"Because Observability is the New Disruption"]
+        A["Main Application Pod<br/>'The Brain of Disruption'"]
+        B["Database Pod<br/>'Because Data is the New Oil'"]
+        C["Monitoring Pod<br/>'Because Observability is the New Disruption'"]
     end
     User[User<br/>"Visionary Innovator"] --> A
     A --> B
