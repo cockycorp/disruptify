@@ -103,8 +103,9 @@ jobs:
 
             # Generate the provenance attestation with the Tejolote attester
             tejolote attest github://${{github.repository}}/"${GITHUB_RUN_ID}" \
-              --artifacts file:.manifests/ \
-              --output .attestations/provenance.json --slsa="1.0" 
+              --artifacts file:$(pwd)/.manifests/ \
+              --output .attestations/provenance.json --slsa="1.0" \
+              --vcs-url=git+https://github.com/${{github.repository}}@${{github.sha}}
 
             # Sign the provenance attestation
             bnd statement .attestations/provenance.json >> .attestations/attestations.bundle.jsonl
