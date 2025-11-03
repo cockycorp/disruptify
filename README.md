@@ -30,7 +30,7 @@ graph TD
         B["Database Pod 'Because Data is the New Oil'"]
         C["Monitoring Pod 'Because Observability is the New Disruption'"]
     end
-    User[User<br/>"Visionary Innovator"] --> A
+    User["User<br/>'Visionary Innovator'"] --> A
     A --> B
     A --> C
 ```
