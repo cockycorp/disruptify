@@ -1,3 +1,4 @@
+---
 name: Build and Push Cockycorp Builder Image
 
 on:
@@ -27,6 +28,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      attestations: write
 
     steps:
       - name: Checkout repository
@@ -34,6 +36,12 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
+      - name: Setup crane
+        uses: imjasonh/setup-crane@v0.4
+
+      - name: Setup bnd
+        uses: carabiner-dev/actions/install/bnd@HEAD
 
       - name: Log in to GitHub Container Registry
         if: github.event_name != 'pull_request'
@@ -80,6 +88,24 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           platforms: linux/amd64,linux/arm64
+
+      - name: 🌶️ Generate SLSA Provenance Attestation
+        id: tejolote        
+        run: |
+            mkdir .attestations
+            mkdir .manifests
+            
+            crane manifest ghcr.io/cockycorp/disruptify-builder@${{ steps.build-and-push.outputs.digest }} >> .manifests/builder.manifest
+
+            # Generate the provenance attestation with the Tejolote attester
+            tejolote attest github://${{github.repository}}/"${GITHUB_RUN_ID}" \
+              --artifacts file:.manifests/ \
+              --output .attestations/provenance.json --slsa="1.0" 
+
+            # Sign the provenance attestation
+            bnd statement .attestations/provenance.json >> .attestations/attestations.bundle.jsonl
+            echo "" >> .attestations/attestations.bundle.jsonl
+            bnd push ${{ github.repository }} .attestations/attestations.bundle.jsonl
 
       - name: Output image details
         if: github.event_name != 'pull_request'
