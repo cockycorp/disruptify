@@ -95,6 +95,9 @@ jobs:
 
       - name: 🌶️ Generate SLSA Provenance Attestation
         id: tejolote        
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}       
         run: |
             mkdir .attestations
             mkdir .manifests
