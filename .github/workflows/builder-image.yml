@@ -114,7 +114,7 @@ jobs:
             # Sign the provenance attestation
             bnd statement .attestations/provenance.json >> .attestations/attestations.bundle.jsonl
             echo "" >> .attestations/attestations.bundle.jsonl
-            bnd push ${{ github.repository }} .attestations/attestations.bundle.jsonl
+            bnd push github ${{ github.repository }} .attestations/attestations.bundle.jsonl
 
       - name: Output image details
         if: github.event_name != 'pull_request'
