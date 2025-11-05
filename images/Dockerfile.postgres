@@ -1,0 +1,49 @@
+FROM postgres:16-alpine
+
+# Set environment variables for PostgreSQL
+ENV POSTGRES_DB=disruptify
+ENV POSTGRES_USER=disruptor
+ENV POSTGRES_PASSWORD=synergy123
+
+# Create initialization script
+RUN mkdir -p /docker-entrypoint-initdb.d
+
+# Add initialization SQL script
+COPY <<EOF /docker-entrypoint-initdb.d/init.sql
+-- Disruptify Database Schema
+-- Because every disruptive app needs a blockchain-ready database
+
+CREATE TABLE IF NOT EXISTS quotes (
+    id SERIAL PRIMARY KEY,
+    text TEXT NOT NULL,
+    author VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    disruption_level INTEGER DEFAULT 100
+);
+
+CREATE TABLE IF NOT EXISTS metrics (
+    id SERIAL PRIMARY KEY,
+    endpoint VARCHAR(255) NOT NULL,
+    request_count INTEGER DEFAULT 0,
+    last_accessed TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Insert some sample data for maximum synergy
+INSERT INTO quotes (text, author, disruption_level) VALUES
+('We are not just disrupting markets, we are creating new paradigms of success', 'Chad Synergy', 150),
+('Blockchain is not just technology, it is a lifestyle', 'Brad Crypto', 200);
+
+-- Create indexes for hyperscale performance
+CREATE INDEX idx_quotes_author ON quotes(author);
+CREATE INDEX idx_metrics_endpoint ON metrics(endpoint);
+
+-- Grant permissions to our disruptor user
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO disruptor;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO disruptor;
+EOF
+
+EXPOSE 5432
+
+# Health check to ensure maximum uptime
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD pg_isready -U disruptor -d disruptify || exit 1
