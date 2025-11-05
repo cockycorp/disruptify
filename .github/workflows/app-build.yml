@@ -15,6 +15,7 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   BUILDER_IMAGE: ghcr.io/cockycorp/disruptify-builder:latest
+  BUILDER_IMAGE_SHA: "sha256:65f645df5d6edb7f632f124836d7c0019eaa172495fbaa29ba1adb983b05fbc2"
 
 jobs:
   build-app:
@@ -60,6 +61,18 @@ jobs:
             org.opencontainers.image.description=AI-Powered Synergistic Techbro Quote Generator
             org.opencontainers.image.vendor=Cockycorp
 
+      - name: 🔴🟡🟢 Verify Build Point Commit to be SLSA Source Level 3+
+        uses: carabiner-dev/actions/ampel/verify@HEAD
+        env:
+          # This is the SLSA builder ID we will verify before running the sourcetool binary
+          AMPEL_BUILDERID: "https://github.com/cockycorp/nextgen-builder/.github/workflows/release.yaml"
+        with:
+          subject: ${{ env.BUILDER_IMAGE_SHA }}
+          policy: "git+https://github.com/carabiner-dev/policies#slsa/slsa-builder-id.json"
+          collector: "github:https://github.com/${{ github.repository }}"
+          signer: "sigstore::https://token.actions.githubusercontent.com::https://github.com/cockycorp/nextgen-builder/.github/workflows/builder-image.yml@refs/heads/main"
+          attest: false
+
       - name: Build and push Application image
         id: build-and-push
         uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
@@ -70,7 +83,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            BUILDER_IMAGE=ghcr.io/cockycorp/disruptify-builder:latest
+            BUILDER_IMAGE={{ env.BUILDER_IMAGE }}@{{ env.BUILDER_IMAGE_SHA }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           platforms: linux/amd64,linux/arm64
