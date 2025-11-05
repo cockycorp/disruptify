@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  # The Disruptify Application - Disrupting quotes since 2025
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: disruptify-app
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+    depends_on:
+      - postgres
+    networks:
+      - disruptify-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+  # PostgreSQL Database - Blockchain-ready data storage
+  postgres:
+    build:
+      context: ./images
+      dockerfile: Dockerfile.postgres
+    container_name: disruptify-db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=disruptify
+      - POSTGRES_USER=disruptor
+      - POSTGRES_PASSWORD=synergy123
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - disruptify-network
+    restart: unless-stopped
+
+  # Grafana Monitoring - Synergistic metrics visualization
+  grafana:
+    build:
+      context: ./images
+      dockerfile: Dockerfile.grafana
+    container_name: disruptify-monitoring
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=disruptor
+      - GF_SECURITY_ADMIN_PASSWORD=synergy123
+      - GF_USERS_ALLOW_SIGN_UP=false
+    depends_on:
+      - postgres
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - disruptify-network
+    restart: unless-stopped
+
+networks:
+  disruptify-network:
+    driver: bridge
+    name: disruptify-network
+
+volumes:
+  postgres-data:
+    name: disruptify-postgres-data
+  grafana-data:
+    name: disruptify-grafana-data
