@@ -94,28 +94,6 @@ jobs:
           cache-to: type=gha,mode=max
           platforms: linux/amd64,linux/arm64
 
-      - name: 🌶️ Generate SLSA Provenance Attestation
-        id: tejolote        
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}       
-        run: |
-            mkdir .attestations
-            mkdir .manifests
-            
-            crane manifest ghcr.io/cockycorp/disruptify-builder@${{ steps.build-and-push.outputs.digest }} >> .manifests/builder.manifest
-
-            # Generate the provenance attestation with the Tejolote attester
-            tejolote attest github://${{github.repository}}/"${GITHUB_RUN_ID}" \
-              --artifacts file:$(pwd)/.manifests/ \
-              --output .attestations/provenance.json --slsa="1.0" \
-              --vcs-url=git+https://github.com/${{github.repository}}@${{github.sha}}
-
-            # Sign the provenance attestation
-            bnd statement .attestations/provenance.json >> .attestations/attestations.bundle.jsonl
-            echo "" >> .attestations/attestations.bundle.jsonl
-            bnd push github ${{ github.repository }} .attestations/attestations.bundle.jsonl
-
       - name: Output image details
         if: github.event_name != 'pull_request'
         run: |
