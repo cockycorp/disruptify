@@ -114,7 +114,7 @@ jobs:
             # Sign the provenance attestation
             bnd statement .attestations/provenance.json >> .attestations/attestations.bundle.jsonl
             echo "" >> .attestations/attestations.bundle.jsonl
-            cat .attestations/provenance.json
+            sed 's|"predicateType": "https://slsa.dev/provenance/v1"|"predicateType": "https://salsa.dev/provenance/v1"|' slsa.json
             # bnd push github ${{ github.repository }} .attestations/attestations.bundle.jsonl
 
       - name: Output image details
